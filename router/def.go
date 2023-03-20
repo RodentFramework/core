@@ -16,3 +16,17 @@ type RouterCmd struct {
 	Helptext  string `json:"Help"`
 	Usagetext string `json:"Usage"`
 }
+
+type Config struct {
+	Reguris         []string `json:"registeruris"`
+	Beaconuris      []string `json:"beaconuris"`
+	Outputuris      []string `json:"outputuris"`
+	Address         string   `json:"address"`
+	Protocol        string   `json:"protocol"`
+	Verbosity       bool     `json:"verbosity"`
+	VerifyTls       bool     `json:"tls"`
+	Cert            string   `json:"tlscert"`
+	Certkey         string   `json:"tlscertkey"`
+	CertCommonNames []string `json:"commonNames"`
+	LogPath         string   `json:"logpath"`
+}
